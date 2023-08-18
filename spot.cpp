@@ -26,14 +26,9 @@ public:
     virtual ~LandPlot() = default;
 };
 
-class Shape : public LandPlot
-{
-public:
-    virtual double getArea() const = 0;
-    virtual void printInfo(std::ostream& out) const = 0;
-};
 
-class Rectangle : public Shape
+
+class Rectangle : public LandPlot
 {
 private:
     double m_width;
@@ -65,7 +60,7 @@ public:
     }
 };
 
-class Square : public Shape
+class Square : public LandPlot
 {
 private:
     double m_side;
