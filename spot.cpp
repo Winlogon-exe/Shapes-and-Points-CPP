@@ -1,107 +1,114 @@
 #include <iostream>
 #include <vector>
-#include <algorithm> 
+#include <algorithm>
+#include <string>
 
 class Owner
 {
 private:
-    int m_x;
-    int m_y;
-    int m_z;
+    std::string name;
 
 public:
-    Owner(int x, int y, int z) : m_x(x), m_y(y), m_z(z) { }
+    Owner(std::string name) : name(name) { }
 
     friend std::ostream& operator<<(std::ostream& out, const Owner& o)
     {
-        return out << "Owner(" << o.m_x << ", " << o.m_y << ", " << o.m_z << ')';
+        return out << "Owner(" << o.name << ")";
     }
 };
 
-class Shape
+class LandPlot
 {
 public:
-    virtual std::ostream& print(std::ostream& out) const = 0;
-
-    friend std::ostream& operator<<(std::ostream& out, const Shape& s)
-    {
-        return s.print(out);
-    }
-    virtual ~Shape() = default;
+    virtual double getArea() const = 0;
+    virtual Owner getOwner() const = 0;
+    virtual void printInfo(std::ostream& out) const = 0;
+    virtual ~LandPlot() = default;
 };
 
-class Triangle : public Shape
+class Shape : public LandPlot
+{
+public:
+    virtual double getArea() const = 0;
+    virtual void printInfo(std::ostream& out) const = 0;
+};
+
+class Rectangle : public Shape
 {
 private:
-    Owner m_p1;
-    Owner m_p2;
-    Owner m_p3;
+    double m_width;
+    double m_height;
+    Owner m_owner;
 
 public:
-    explicit Triangle(const Owner& p1, const Owner& p2, const Owner& p3) : m_p1(p1), m_p2(p2), m_p3(p3)
+    Rectangle(double width, double height, const Owner& owner) : m_width(width), m_height(height), m_owner(owner)
     {
     }
 
-    std::ostream& print(std::ostream& out) const override
+    double getArea() const override
     {
-        out << "Triangle:\n";
-        out << "  Point 1: " << m_p1 << '\n';
-        out << "  Point 2: " << m_p2 << '\n';
-        out << "  Point 3: " << m_p3;
-        return out;
+        return m_width * m_height;
+    }
+
+    Owner getOwner() const override
+    {
+        return m_owner;
+    }
+
+    void printInfo(std::ostream& out) const override
+    {
+        out << "Rectangle:\n";
+        out << "  Width: " << m_width << '\n';
+        out << "  Height: " << m_height << '\n';
+        out << "  Owner: " << m_owner << '\n';
+        out << "  Area: " << getArea();
     }
 };
 
-class Circle : public Shape
+class Square : public Shape
 {
 private:
-    Owner m_center;
-    int m_radius;
+    double m_side;
+    Owner m_owner;
 
 public:
-    explicit Circle(const Owner& center, int radius) : m_center(center), m_radius(radius)
+    Square(double side, const Owner& owner) : m_side(side), m_owner(owner)
     {
     }
 
-    std::ostream& print(std::ostream& out) const override
+    double getArea() const override { return m_side * m_side;}
+
+    Owner getOwner() const override {return m_owner;}
+
+    void printInfo(std::ostream& out) const override
     {
-        out << "Circle:\n";
-        out << "  Center: " << m_center << '\n';
-        out << "  Radius: " << m_radius;
-        return out;
+        out << "Square:\n";
+        out << "  Side: " << m_side << '\n';
+        out << "  Owner: " << m_owner << '\n';
+        out << "  Area: " << getArea();
     }
-    int getRadius() const { return m_radius; }
 };
-
-int getLargestRadius(const std::vector<Shape*>& shapes)
-{
-    int largestRadius = 0;
-
-    for (const auto* shape : shapes)
-    {
-        if (auto* circle = dynamic_cast<const Circle*>(shape))
-        {
-            largestRadius = std::max(largestRadius, circle->getRadius());
-        }
-    }
-
-    return largestRadius;
-}
 
 int main()
 {
-    std::vector<Shape*> shapes;
-    for (int i = 0; i < 2; ++i) {
-        shapes.push_back(new Circle(Owner{ 1, 2, 3 }, 7));
-        shapes.push_back(new Triangle(Owner{ 1, 2, 3 }, Owner{ 4, 5, 6 }, Owner{ 7, 8, 9 }));
+    std::vector<LandPlot*> plots;
+    Owner owner1("John");
+    Owner owner2("Alice");
+
+    for (int i = 0; i < 2; ++i)
+    {
+        plots.push_back(new Square(5, owner1));
+        plots.push_back(new Rectangle(4, 7, owner2));
     }
 
-    for (const auto* shape : shapes)
-        std::cout << *shape << '\n';
+    for (const auto* plot : plots)
+    {
+        plot->printInfo(std::cout); 
+        std::cout << "\n\n";
+    }
 
-    std::cout << "The largest radius is: " << getLargestRadius(shapes) << '\n';
+    for (const auto* plot : plots)
+        delete plot;
 
-    for (const auto* shape : shapes)
-        delete shape;
-
-    return 0
+    return 0;
+}
