@@ -2,7 +2,7 @@
 #include <vector>
 #include <algorithm> 
 
-class Point
+class Owner
 {
 private:
     int m_x;
@@ -10,11 +10,11 @@ private:
     int m_z;
 
 public:
-    Point(int x, int y, int z) : m_x(x), m_y(y), m_z(z) { }
+    Owner(int x, int y, int z) : m_x(x), m_y(y), m_z(z) { }
 
-    friend std::ostream& operator<<(std::ostream& out, const Point& p)
+    friend std::ostream& operator<<(std::ostream& out, const Owner& o)
     {
-        return out << "Point(" << p.m_x << ", " << p.m_y << ", " << p.m_z << ')';
+        return out << "Owner(" << o.m_x << ", " << o.m_y << ", " << o.m_z << ')';
     }
 };
 
@@ -33,21 +33,21 @@ public:
 class Triangle : public Shape
 {
 private:
-    Point p1;
-    Point p2;
-    Point p3;
+    Owner m_p1;
+    Owner m_p2;
+    Owner m_p3;
 
 public:
-    explicit Triangle(const Point& p1, const Point& p2, const Point& p3) : p1(p1), p2(p2), p3(p3)
+    explicit Triangle(const Owner& p1, const Owner& p2, const Owner& p3) : m_p1(p1), m_p2(p2), m_p3(p3)
     {
     }
 
     std::ostream& print(std::ostream& out) const override
     {
         out << "Triangle:\n";
-        out << "  Point 1: " << p1 << '\n';
-        out << "  Point 2: " << p2 << '\n';
-        out << "  Point 3: " << p3;
+        out << "  Point 1: " << m_p1 << '\n';
+        out << "  Point 2: " << m_p2 << '\n';
+        out << "  Point 3: " << m_p3;
         return out;
     }
 };
@@ -55,11 +55,11 @@ public:
 class Circle : public Shape
 {
 private:
-    Point m_center;
+    Owner m_center;
     int m_radius;
 
 public:
-    explicit Circle(const Point& center, int radius) : m_center(center), m_radius(radius)
+    explicit Circle(const Owner& center, int radius) : m_center(center), m_radius(radius)
     {
     }
 
@@ -92,17 +92,16 @@ int main()
 {
     std::vector<Shape*> shapes;
     for (int i = 0; i < 2; ++i) {
-        shapes.push_back(new Circle(Point{ 1, 2, 3 }, 7));
-        shapes.push_back(new Triangle(Point{ 1, 2, 3 }, Point{ 4, 5, 6 }, Point{ 7, 8, 9 }));
+        shapes.push_back(new Circle(Owner{ 1, 2, 3 }, 7));
+        shapes.push_back(new Triangle(Owner{ 1, 2, 3 }, Owner{ 4, 5, 6 }, Owner{ 7, 8, 9 }));
     }
 
     for (const auto* shape : shapes)
         std::cout << *shape << '\n';
 
-    std::cout << "\nThe largest radius is: " << getLargestRadius(shapes) << '\n';
+    std::cout << "The largest radius is: " << getLargestRadius(shapes) << '\n';
 
     for (const auto* shape : shapes)
         delete shape;
 
-    return 0;
-}
+    return 0
