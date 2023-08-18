@@ -17,18 +17,16 @@ public:
     }
 };
 
-class LandPlot
+class Shape
 {
 public:
     virtual double getArea() const = 0;
     virtual Owner getOwner() const = 0;
     virtual void printInfo(std::ostream& out) const = 0;
-    virtual ~LandPlot() = default;
+    virtual ~Shape() = default;
 };
 
-
-
-class Rectangle : public LandPlot
+class Rectangle : public Shape
 {
 private:
     double m_width;
@@ -60,7 +58,7 @@ public:
     }
 };
 
-class Square : public LandPlot
+class Square : public Shape
 {
 private:
     double m_side;
@@ -86,23 +84,23 @@ public:
 
 int main()
 {
-    std::vector<LandPlot*> plots;
+    std::vector<Shape*> Shapes;
     Owner owner1("John");
     Owner owner2("Alice");
 
-    for (int i = 0; i < 2; ++i)
+    for (int i = 0; i < 1; ++i)
     {
-        plots.push_back(new Square(5, owner1));
-        plots.push_back(new Rectangle(4, 7, owner2));
+        Shapes.push_back(new Square(5, owner1));
+        Shapes.push_back(new Rectangle(4, 7, owner2));
     }
 
-    for (const auto* plot : plots)
+    for (const auto* plot : Shapes)
     {
         plot->printInfo(std::cout); 
         std::cout << "\n\n";
     }
 
-    for (const auto* plot : plots)
+    for (const auto* plot : Shapes)
         delete plot;
 
     return 0;
