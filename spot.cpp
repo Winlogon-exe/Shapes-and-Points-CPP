@@ -9,11 +9,19 @@ private:
     std::string name;
 
 public:
-    Owner(std::string name) : name(name) { }
+   Owner(std::string&& name) noexcept : name(std::move(name)) { std::cout << "move"; };
+   Owner(const std::string& name) : name(name) { std::cout << "copy"; }
 
-    friend std::ostream& operator<<(std::ostream& out, const Owner& o)
+    friend std::ostream& operator<<(std::ostream& out, const Owner& owner)
     {
-        return out << "Owner(" << o.name << ")";
+        return out << "Owner(" << owner.name << ")";
+    }
+
+    Owner& operator=(const Owner& other) noexcept
+    {
+        if (this != &other)
+            name = other.name;
+        return *this;
     }
 };
 
@@ -21,8 +29,8 @@ class Shape
 {
 public:
     virtual double getArea() const = 0;
-    virtual Owner getOwner() const = 0;
-    virtual void printInfo(std::ostream& out) const = 0;
+    virtual const  Owner& getOwner() const = 0;
+    virtual void printInfo() const = 0;
     virtual ~Shape() = default;
 };
 
@@ -31,77 +39,73 @@ class Rectangle : public Shape
 private:
     double m_width;
     double m_height;
-    Owner m_owner;
+    Owner m_owner; //Участки не могу существовать без владельца 
 
 public:
     Rectangle(double width, double height, const Owner& owner) : m_width(width), m_height(height), m_owner(owner)
     {
     }
 
-    double getArea() const override
-    {
-        return m_width * m_height;
-    }
+    double getArea() const override { return m_width * m_height;}
 
-    Owner getOwner() const override
-    {
-        return m_owner;
-    }
+    const Owner& getOwner() const override { return m_owner; }
 
-    void printInfo(std::ostream& out) const override
+
+    void printInfo() const override
     {
-        out << "Rectangle:\n";
-        out << "  Width: " << m_width << '\n';
-        out << "  Height: " << m_height << '\n';
-        out << "  Owner: " << m_owner << '\n';
-        out << "  Area: " << getArea();
+        std::cout << "Rectangle:\n";
+        std::cout << "  Width: " << m_width << '\n';
+        std::cout << "  Height: " << m_height << '\n';
+        std::cout << "  Owner: " << m_owner << '\n';
+        std::cout << "  Area: " << getArea();
     }
 };
 
-class Square : public Shape
+class Square : public Shape 
 {
 private:
     double m_side;
-    Owner m_owner;
+    Owner m_owner;//Участки не могу существовать без владельца 
 
 public:
-    Square(double side, const Owner& owner) : m_side(side), m_owner(owner)
+    Square(double side, const Owner& owner) : m_side(side), m_owner(owner) 
     {
     }
 
-    double getArea() const override { return m_side * m_side;}
+    double getArea() const override { return m_side * m_side; }
 
-    Owner getOwner() const override {return m_owner;}
+    const Owner& getOwner() const override { return m_owner; }
 
-    void printInfo(std::ostream& out) const override
+    void printInfo() const override
     {
-        out << "Square:\n";
-        out << "  Side: " << m_side << '\n';
-        out << "  Owner: " << m_owner << '\n';
-        out << "  Area: " << getArea();
+        std::cout << "Square:\n";
+        std::cout << "  Side: " << m_side << '\n';
+        std::cout << "  Owner: " << m_owner << '\n';
+        std::cout << "  Area: " << getArea();
     }
 };
 
-int main()
+void AddObject()
 {
-    std::vector<Shape*> Shapes;
-    Owner owner1("John");
-    Owner owner2("Alice");
+    std::vector<std::unique_ptr<Shape>> Shapes;
+    std::string SquareName = "alice";
+    std::string RectangleName = "jhon"; 
 
-    for (int i = 0; i < 1; ++i)
-    {
-        Shapes.push_back(new Square(5, owner1));
-        Shapes.push_back(new Rectangle(4, 7, owner2));
-    }
+    Owner owner1(std::move(SquareName));
+    Owner owner2(std::move(RectangleName)); 
 
-    for (const auto* plot : Shapes)
+    Shapes.push_back(std::make_unique<Square>(5, owner1));   //std::move?
+    Shapes.push_back(std::make_unique<Rectangle>(4, 7, owner2));  //std::move?
+
+    for (const auto& plot : Shapes)
     {
-        plot->printInfo(std::cout); 
+        plot->printInfo();
         std::cout << "\n\n";
     }
+}
 
-    for (const auto* plot : Shapes)
-        delete plot;
-
+int main()
+{
+    AddObject();
     return 0;
 }
