@@ -1,115 +1,120 @@
-#include <iostream>
 #include <vector>
-#include <algorithm>
-#include <string>
-#include <memory>
-#include <algorithm>
-class Owner
+#include <iostream>
+#include <algorithm> // для std::max
+
+class Point
 {
 private:
-    std::string name;
+    int m_x;
+    int m_y;
+    int m_z;
+
 public:
-    Owner(std::string name):name(name)
+    Point(int x, int y, int z)
+        : m_x(x), m_y(y), m_z(z)
     {
 
     }
+
+    friend std::ostream& operator<<(std::ostream& out, const Point& p)
+    {
+        return out << "Point(" << p.m_x << ", " << p.m_y << ", " << p.m_z << ')';
+    }
+};
+
+class Owner
+{
+private:
+    std::string m_name;
+
+public:
+    Owner(std::string name) : m_name(name) {}
+
     friend std::ostream& operator<<(std::ostream& out, const Owner& owner)
     {
-        return out << "Owner(" << owner.name << ")";
+        return out << "Owner: " << owner.m_name;
     }
 };
 
 class Shape
 {
 public:
-    virtual double getArea() const = 0;
-    virtual const Owner& getOwner() const = 0;
     virtual std::ostream& print(std::ostream& out) const = 0;
-    virtual ~Shape() = default;
 
     friend std::ostream& operator<<(std::ostream& out, const Shape& p)
     {
         return p.print(out);
     }
+    virtual ~Shape() = default;
 };
 
-class Rectangle : public Shape
+class Triangle : public Shape
 {
 private:
-    double m_width;
-    double m_height;
+    Point m_p1;
+    Point m_p2;
+    Point m_p3;
     Owner m_owner;
 
 public:
-    Rectangle(double width, double height, const Owner& owner) : m_width(width), m_height(height), m_owner(owner)
+    Triangle(const Point& p1, const Point& p2, const Point& p3, const Owner& owner)
+        : m_p1(p1), m_p2(p2), m_p3(p3), m_owner(owner)
     {
     }
 
-    double getArea() const override { return m_width * m_height; }
-
-    const Owner& getOwner() const override { return m_owner; }
-
     std::ostream& print(std::ostream& out) const override
     {
-        out << "Rectangle:\n";
-        out << "  Width: " << m_width << '\n';
-        out << "  Height: " << m_height << '\n';
-        out << "  Owner: " << m_owner << '\n';
-        out << "  Area: " << getArea();
+        out << "Triangle(" << m_p1 << ", " << m_p2 << ", " << m_p3 << ")\n";
+        out << "  " << m_owner;
         return out;
     }
 };
 
-class Square : public Shape
+class Circle : public Shape
 {
 private:
-    double m_side;
+    Point m_center;
+    int m_radius = 0;
     Owner m_owner;
 
 public:
-    Square(double side, const Owner& owner) : m_side(side), m_owner(owner)
+    Circle(const Point& center, int radius, const Owner& owner)
+        : m_center(center), m_radius(radius), m_owner(owner)
     {
     }
-
-    double getArea() const override { return m_side * m_side; }
-
-    const Owner& getOwner() const override { return m_owner; }
 
     std::ostream& print(std::ostream& out) const override
     {
-        out << "Square:\n";
-        out << "  Side: " << m_side << '\n';
-        out << "  Owner: " << m_owner << '\n';
-        out << "  Area: " << getArea();
+        out << "Circle(" << m_center << ", radius " << m_radius << ")\n";
+        out << "  " << m_owner;
         return out;
     }
+
+    int getRadius() const { return m_radius; }
 };
 
-
-void AddObject()
+int getSum(const std::vector<Shape*>& v)
 {
-    std::string squareName = "alice";
-    std::string rectangleName = "jhon";
+    int sum = 0;
 
-    Owner owner1(squareName);
-    Owner owner2(rectangleName);
-
-    std::vector<Shape*> v = {
-        new Rectangle(5,5,rectangleName),
-        new Square(10,squareName)
-    };
-
-    for (const auto& element : v)
-    {
-        std::cout << *element <<"\n\n";
-    }
-
-    for (const auto* element : v)
-        delete element;
+    return sum;
 }
 
 int main()
 {
-    AddObject();
+    std::vector<Shape*> v{
+        new Circle{ Point{1, 2, 3}, 7, Owner("alice") },
+        new Triangle{ Point{1, 2, 3}, Point{4, 5, 6}, Point{7, 8, 9}, Owner("bob") },
+        new Circle{ Point{4, 5, 6}, 3, Owner("john") }
+    };
+
+    for (const auto* element : v) // элемент будет Shape*
+        std::cout << *element << '\n';
+
+    std::cout << "The largest radius is: " << getSum(v) << '\n';
+
+    for (const auto* element : v)
+        delete element;
+
     return 0;
 }
