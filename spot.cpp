@@ -18,8 +18,12 @@ public:
 
     friend std::ostream& operator<<(std::ostream& out, const Point& p)
     {
-        return out << "Point(" << p.m_x << ", " << p.m_y << ", " << p.m_z << ')';
+        return out << "(" << p.m_x << ", " << p.m_y << ", " << p.m_z << ')';
     }
+
+    int getX() const { return m_x; }
+    int getY() const { return m_y; }
+    int getZ() const { return m_z; }
 };
 
 class Owner
@@ -39,12 +43,14 @@ public:
 class Shape
 {
 public:
+    virtual int getPointSum() const = 0;
     virtual std::ostream& print(std::ostream& out) const = 0;
 
     friend std::ostream& operator<<(std::ostream& out, const Shape& p)
     {
         return p.print(out);
     }
+
     virtual ~Shape() = default;
 };
 
@@ -62,10 +68,17 @@ public:
     {
     }
 
+    int getPointSum() const override
+    {
+        return m_p1.getX() + m_p1.getY() + m_p1.getZ() +
+            m_p2.getX() + m_p2.getY() + m_p2.getZ() +
+            m_p3.getX() + m_p3.getY() + m_p3.getZ();
+    }
+
     std::ostream& print(std::ostream& out) const override
     {
-        out << "Triangle(" << m_p1 << ", " << m_p2 << ", " << m_p3 << ")\n";
-        out << "  " << m_owner;
+        out << "Triangle " << m_owner << "\n";
+        out << "  Points: " << m_p1 << ", " << m_p2 << ", " << m_p3 << '\n';
         return out;
     }
 };
@@ -74,8 +87,8 @@ class Circle : public Shape
 {
 private:
     Point m_center;
+    Owner m_owner; 
     int m_radius = 0;
-    Owner m_owner;
 
 public:
     Circle(const Point& center, int radius, const Owner& owner)
@@ -83,20 +96,26 @@ public:
     {
     }
 
-    std::ostream& print(std::ostream& out) const override
+    int getPointSum() const override
     {
-        out << "Circle(" << m_center << ", radius " << m_radius << ")\n";
-        out << "  " << m_owner;
-        return out;
+        return m_center.getX() + m_center.getY() + m_center.getZ();
     }
 
-    int getRadius() const { return m_radius; }
+    std::ostream& print(std::ostream& out) const override
+    {
+        out << "Circle " << m_owner << "\n";
+        out << "  Center: " << m_center << ", Radius: " << m_radius << '\n';
+        return out;
+    }
 };
 
 int getSum(const std::vector<Shape*>& v)
 {
     int sum = 0;
-
+    for (const auto* element : v)
+    {
+        sum += element->getPointSum();
+    }
     return sum;
 }
 
@@ -108,10 +127,10 @@ int main()
         new Circle{ Point{4, 5, 6}, 3, Owner("john") }
     };
 
-    for (const auto* element : v) // элемент будет Shape*
+    for (const Shape* element : v) 
         std::cout << *element << '\n';
 
-    std::cout << "The largest radius is: " << getSum(v) << '\n';
+    std::cout << "The sum of all points is: " << getSum(v) << '\n';
 
     for (const auto* element : v)
         delete element;
